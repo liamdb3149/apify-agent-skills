@@ -1,0 +1,220 @@
+# Lead Generation Workflows
+
+Step-by-step guides for common lead generation tasks.
+
+---
+
+## Workflow 1: Local Business Lead Generation
+
+Find local businesses (restaurants, gyms, shops) with contact details.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Ask user for business type and location
+- [ ] Ask user for output format (CSV/JSON)
+- [ ] Run Google Maps Scraper
+- [ ] Summarize results with key fields
+```
+
+### Example Interaction
+
+**User:** "Find coffee shops in Seattle"
+
+**Response:**
+1. Ask: "Would you like the results in CSV or JSON format?"
+2. Suggest filename: `coffee-shops-seattle.csv`
+3. Run command:
+
+```bash
+uv run --with python-dotenv --with requests \
+  ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
+  --actor "compass~crawler-google-places" \
+  --input '{"searchStringsArray": ["coffee shops"], "locationQuery": "Seattle, USA", "maxCrawledPlacesPerSearch": 100, "language": "en"}' \
+  --output coffee-shops-seattle.csv \
+  --format csv
+```
+
+4. Report: "Found 87 coffee shops. Key fields: title, address, phone, website, rating."
+
+---
+
+## Workflow 2: Website Contact Enrichment
+
+Extract contact details from a list of websites.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Collect website URLs from user
+- [ ] Ask user for output format
+- [ ] Run Contact Details Scraper
+- [ ] Summarize emails and social profiles found
+```
+
+### Example Interaction
+
+**User:** "Get contact info from these sites: acme.com, widgets.io"
+
+**Response:**
+1. Confirm URLs and format preference
+2. Run command:
+
+```bash
+uv run --with python-dotenv --with requests \
+  ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
+  --actor "vdrmota~contact-info-scraper" \
+  --input '{"startUrls": [{"url": "https://acme.com"}, {"url": "https://widgets.io"}], "maxRequestsPerStartUrl": 20, "mergeContacts": true}' \
+  --output contacts.json \
+  --format json
+```
+
+3. Report: "Found 5 emails, 3 LinkedIn profiles, 2 Twitter handles."
+
+---
+
+## Workflow 3: Instagram Influencer Discovery
+
+Find Instagram profiles for influencer outreach.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Get list of usernames from user
+- [ ] Run Instagram Profile Scraper
+- [ ] Report follower counts and engagement
+```
+
+### Example Interaction
+
+**User:** "Get info on these Instagram accounts: humansofny, natgeo"
+
+**Response:**
+1. Run command:
+
+```bash
+uv run --with python-dotenv --with requests \
+  ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
+  --actor "apify~instagram-profile-scraper" \
+  --input '{"usernames": ["humansofny", "natgeo"]}' \
+  --output instagram-profiles.csv \
+  --format csv
+```
+
+2. Report: "Scraped 2 profiles. humansofny: 12.5M followers, natgeo: 283M followers."
+
+---
+
+## Workflow 4: TikTok Creator Research
+
+Research TikTok creators for partnerships.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Get TikTok usernames from user
+- [ ] Ask how many videos to analyze
+- [ ] Run TikTok Profile Scraper
+- [ ] Report engagement metrics
+```
+
+### Example Interaction
+
+**User:** "Analyze TikTok creator @charlidamelio"
+
+**Response:**
+1. Ask: "How many recent videos should I analyze? (default: 50)"
+2. Run command:
+
+```bash
+uv run --with python-dotenv --with requests \
+  ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
+  --actor "clockworks~tiktok-profile-scraper" \
+  --input '{"profiles": ["charlidamelio"], "resultsPerPage": 50}' \
+  --output tiktok-charli.json \
+  --format json
+```
+
+3. Report engagement summary: avg views, likes, comments per video.
+
+---
+
+## Workflow 5: Facebook Group Prospecting
+
+Find buying intent in Facebook groups.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Get Facebook group URL from user
+- [ ] Ask max posts to scrape
+- [ ] Run Facebook Groups Scraper
+- [ ] Identify posts with buying signals
+```
+
+### Example Interaction
+
+**User:** "Find posts with buying intent in this Facebook group: [URL]"
+
+**Response:**
+1. Ask: "How many posts should I analyze? (default: 100)"
+2. Run command:
+
+```bash
+uv run --with python-dotenv --with requests \
+  ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
+  --actor "apify~facebook-groups-scraper" \
+  --input '{"startUrls": [{"url": "https://www.facebook.com/groups/example"}], "maxPosts": 100}' \
+  --output group-posts.json \
+  --format json
+```
+
+3. Analyze posts for keywords: "looking for", "recommend", "need help", "where can I buy"
+
+---
+
+## Workflow 6: B2B Lead List Building
+
+Build a comprehensive B2B lead list combining multiple sources.
+
+### Checklist
+
+```
+Task Progress:
+- [ ] Clarify target industry and location
+- [ ] Step 1: Run Google Maps Scraper for businesses
+- [ ] Step 2: Run Contact Details Scraper on websites found
+- [ ] Combine and deduplicate results
+- [ ] Export final lead list
+```
+
+### Example Interaction
+
+**User:** "Build a lead list for SaaS companies in Austin"
+
+**Response:**
+1. Start with Google Search or Maps to find companies
+2. Extract websites from results
+3. Run Contact Details Scraper on each website
+4. Merge results into single lead list with:
+   - Company name
+   - Website
+   - Email addresses
+   - Phone numbers
+   - Social profiles
+
+---
+
+## Common Follow-up Actions
+
+After generating leads, suggest:
+
+1. **Filter results** - Remove duplicates or low-quality entries
+2. **Enrich data** - Run Contact Details Scraper on websites
+3. **Export to CRM** - Save as CSV for import
+4. **Segment leads** - Group by location, industry, or size
