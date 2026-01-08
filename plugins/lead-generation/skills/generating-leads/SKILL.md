@@ -19,46 +19,42 @@ Copy this checklist and track progress:
 ```
 Task Progress:
 - [ ] Step 1: Determine lead source (select actor)
-- [ ] Step 2: Ask user preferences (format, filename)
-- [ ] Step 3: Run the lead finder script
-- [ ] Step 4: Summarize results
+- [ ] Step 2: Read actor schema from reference docs
+- [ ] Step 3: Ask user preferences (format, filename)
+- [ ] Step 4: Run the lead finder script
+- [ ] Step 5: Summarize results
 ```
 
 ### Step 1: Determine Lead Source
 
-| User Need | Actor ID | Best For |
-|-----------|----------|----------|
-| Local businesses | `compass/crawler-google-places` | Restaurants, gyms, shops |
-| Contact enrichment | `vdrmota/contact-info-scraper` | Emails, phones from URLs |
-| Instagram profiles | `apify/instagram-profile-scraper` | Influencer discovery |
-| TikTok profiles | `clockworks/tiktok-profile-scraper` | Creator outreach |
-| Facebook pages | `apify/facebook-pages-scraper` | Business contacts |
-| Facebook groups | `apify/facebook-groups-scraper` | Buying intent signals |
-| Google Search | `apify/google-search-scraper` | Broad lead discovery |
-| YouTube channels | `apify/youtube-scraper` | Creator partnerships |
-| Google Maps emails | `poidata/google-maps-email-extractor` | Direct email extraction |
+Select the appropriate actor based on user needs:
 
-## Actor Reference Documentation
+| User Need | Actor ID | Best For | Reference Doc |
+|-----------|----------|----------|---------------|
+| Local businesses | `compass/crawler-google-places` | Restaurants, gyms, shops | [Schema](reference/actors/compass-crawler-google-places.md) |
+| Contact enrichment | `vdrmota/contact-info-scraper` | Emails, phones from URLs | [Schema](reference/actors/vdrmota-contact-info-scraper.md) |
+| Instagram profiles | `apify/instagram-profile-scraper` | Influencer discovery | [Schema](reference/actors/apify-instagram-profile-scraper.md) |
+| TikTok profiles | `clockworks/tiktok-profile-scraper` | Creator outreach | [Schema](reference/actors/clockworks-tiktok-profile-scraper.md) |
+| Facebook pages | `apify/facebook-pages-scraper` | Business contacts | [Schema](reference/actors/apify-facebook-pages-scraper.md) |
+| Facebook groups | `apify/facebook-groups-scraper` | Buying intent signals | [Schema](reference/actors/apify-facebook-groups-scraper.md) |
+| Google Search | `apify/google-search-scraper` | Broad lead discovery | [Schema](reference/actors/apify-google-search-scraper.md) |
+| YouTube channels | `streamers/youtube-scraper` | Creator partnerships | [Schema](reference/actors/streamers-youtube-scraper.md) |
+| Google Maps emails | `poidata/google-maps-email-extractor` | Direct email extraction | [Schema](reference/actors/poidata-google-maps-email-extractor.md) |
 
-Detailed input schemas and output fields for each actor:
+### Step 2: Read Actor Schema
 
-- [Google Maps Scraper](reference/actors/compass-crawler-google-places.md) - `compass/crawler-google-places`
-- [Contact Details Scraper](reference/actors/vdrmota-contact-info-scraper.md) - `vdrmota/contact-info-scraper`
-- [Instagram Profile Scraper](reference/actors/apify-instagram-profile-scraper.md) - `apify/instagram-profile-scraper`
-- [TikTok Profile Scraper](reference/actors/clockworks-tiktok-profile-scraper.md) - `clockworks/tiktok-profile-scraper`
-- [Facebook Pages Scraper](reference/actors/apify-facebook-pages-scraper.md) - `apify/facebook-pages-scraper`
-- [Facebook Groups Scraper](reference/actors/apify-facebook-groups-scraper.md) - `apify/facebook-groups-scraper`
-- [Google Search Scraper](reference/actors/apify-google-search-scraper.md) - `apify/google-search-scraper`
-- [YouTube Scraper](reference/actors/streamers-youtube-scraper.md) - `streamers/youtube-scraper`
-- [Google Maps Email Extractor](reference/actors/poidata-google-maps-email-extractor.md) - `poidata/google-maps-email-extractor`
+Read the corresponding reference doc from the table above to understand:
+- Required and optional input parameters
+- Output fields available
+- Actor-specific requirements
 
-### Step 2: Ask User Preferences
+### Step 3: Ask User Preferences
 
 Before running, ask:
 1. **Output format**: CSV or JSON? (default: CSV)
 2. **Output filename**: Suggest descriptive name based on search
 
-### Step 3: Run the Script
+### Step 4: Run the Script
 
 ```bash
 uv run --with python-dotenv --with requests \
@@ -75,7 +71,7 @@ The script handles:
 - Downloading results in requested format
 - Reporting record count and file size
 
-### Step 4: Summarize Results
+### Step 5: Summarize Results
 
 After completion, report:
 - Number of leads found
