@@ -5,7 +5,7 @@ description: Generates B2B/B2C leads by scraping Google Maps, websites, Instagra
 
 # Generating Leads
 
-Scrape leads from multiple platforms using Apify actors.
+Scrape leads from multiple platforms using Apify Actors.
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ Copy this checklist and track progress:
 
 ```
 Task Progress:
-- [ ] Step 1: Determine lead source (select actor)
-- [ ] Step 2: Read actor schema from reference docs
+- [ ] Step 1: Determine lead source (select Actor)
+- [ ] Step 2: Read Actor schema from reference docs
 - [ ] Step 3: Ask user preferences (format, filename)
 - [ ] Step 4: Run the lead finder script
 - [ ] Step 5: Summarize results
@@ -27,7 +27,7 @@ Task Progress:
 
 ### Step 1: Determine Lead Source
 
-Select the appropriate actor based on user needs:
+Select the appropriate Actor based on user needs:
 
 | User Need | Actor ID | Best For | Reference Doc |
 |-----------|----------|----------|---------------|
@@ -75,7 +75,7 @@ uv run --with python-dotenv --with requests \
 
 The script handles:
 - Loading `APIFY_TOKEN` from `.env`
-- Starting and polling the actor run
+- Starting and polling the Actor run
 - Downloading results in requested format
 - Reporting record count and file size
 
@@ -93,7 +93,7 @@ After completion, report:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "compass~crawler-google-places" \
+  --actor "compass/crawler-google-places" \
   --input '{"searchStringsArray": ["coffee shops"], "locationQuery": "Seattle, USA", "maxCrawledPlacesPerSearch": 50}' \
   --output coffee-shops-seattle.csv \
   --format csv
@@ -103,7 +103,7 @@ uv run --with python-dotenv --with requests \
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "vdrmota~contact-info-scraper" \
+  --actor "vdrmota/contact-info-scraper" \
   --input '{"startUrls": [{"url": "https://example.com"}], "maxRequestsPerStartUrl": 20}' \
   --output contacts.json \
   --format json
@@ -116,6 +116,6 @@ See [reference/workflows.md](reference/workflows.md) for detailed step-by-step g
 | Error | Solution |
 |-------|----------|
 | `APIFY_TOKEN not found` | Ask user to create `.env` with `APIFY_TOKEN=your_token` |
-| `Actor not found` | Check actor ID spelling |
+| `Actor not found` | Check Actor ID spelling |
 | `Run FAILED` | Ask user to check Apify console link in error output |
 | `Timeout` | Reduce input size or increase `--timeout` |

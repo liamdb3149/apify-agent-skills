@@ -30,7 +30,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "compass~crawler-google-places" \
+  --actor "compass/crawler-google-places" \
   --input '{"searchStringsArray": ["coffee shops"], "locationQuery": "Seattle, USA", "maxCrawledPlacesPerSearch": 100, "language": "en"}' \
   --output coffee-shops-seattle.csv \
   --format csv
@@ -65,7 +65,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "vdrmota~contact-info-scraper" \
+  --actor "vdrmota/contact-info-scraper" \
   --input '{"startUrls": [{"url": "https://acme.com"}, {"url": "https://widgets.io"}], "maxRequestsPerStartUrl": 20, "mergeContacts": true}' \
   --output contacts.json \
   --format json
@@ -98,7 +98,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~instagram-profile-scraper" \
+  --actor "apify/instagram-profile-scraper" \
   --input '{"usernames": ["humansofny", "natgeo"]}' \
   --output instagram-profiles.csv \
   --format csv
@@ -133,7 +133,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "clockworks~tiktok-profile-scraper" \
+  --actor "clockworks/tiktok-profile-scraper" \
   --input '{"profiles": ["charlidamelio"], "resultsPerPage": 50}' \
   --output tiktok-charli.json \
   --format json
@@ -168,7 +168,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~facebook-groups-scraper" \
+  --actor "apify/facebook-groups-scraper" \
   --input '{"startUrls": [{"url": "https://www.facebook.com/groups/example"}], "maxPosts": 100}' \
   --output group-posts.json \
   --format json
@@ -205,7 +205,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~facebook-events-scraper" \
+  --actor "apify/facebook-events-scraper" \
   --input '{"searchQueries": ["startup tech San Francisco"], "maxEvents": 50}' \
   --output tech-events-sf.json \
   --format json
@@ -256,7 +256,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~facebook-page-contact-information" \
+  --actor "apify/facebook-page-contact-information" \
   --input '{"pages": ["starbucks", "chipotle"], "language": "en-US"}' \
   --output facebook-page-contacts.csv \
   --format csv
@@ -332,7 +332,7 @@ Task Progress:
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~youtube-scraper" \
+  --actor "apify/youtube-scraper" \
   --input '{"searchKeywords": ["Claude Code"], "maxResults": 50, "extendOutputFunction": "async ({ data, item, page, request, customData }) => { return item; }"}' \
   --output claude-code-videos.json \
   --format json
@@ -344,7 +344,7 @@ uv run --with python-dotenv --with requests \
 ```bash
 uv run --with python-dotenv --with requests \
   ${CLAUDE_PLUGIN_ROOT}/skills/generating-leads/reference/scripts/run_actor.py \
-  --actor "apify~youtube-scraper" \
+  --actor "apify/youtube-scraper" \
   --input '{"startUrls": [{"url": "https://www.youtube.com/@channel1"}, {"url": "https://www.youtube.com/@channel2"}], "maxResults": 1}' \
   --output youtube-creators.csv \
   --format csv

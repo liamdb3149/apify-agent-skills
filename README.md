@@ -7,13 +7,13 @@ Official Apify plugin marketplace for Claude Code - enabling web scraping, data 
 ### Add the marketplace
 
 ```bash
-/plugin marketplace add apify/claude-code-marketplace
+/plugin marketplace add https://github.com/apify/claude-code-plugins
 ```
 
 ### Install a plugin
 
 ```bash
-/plugin install lead-generation@apify-marketplace
+/plugin install lead-generation@apify
 ```
 
 ## Prerequisites
@@ -33,7 +33,7 @@ Generate and enrich B2B/B2C leads using Apify scrapers across Google Maps, socia
 
 #### Skills
 
-The `lead-finder` skill allows Claude to automatically invoke lead generation when you ask for prospects, leads, or business contacts.
+The `lead-generation` skill allows Claude to automatically invoke lead generation when you ask for prospects, leads, or business contacts.
 
 **Example prompts:**
 - "Find me coffee shops in Seattle"
@@ -43,14 +43,26 @@ The `lead-finder` skill allows Claude to automatically invoke lead generation wh
 
 ## Supported Apify Actors
 
-| Actor | Use Case |
-|-------|----------|
-| Google Maps Scraper | Find local businesses |
-| Contact Details Scraper | Extract emails & socials from URLs |
-| Instagram Profile Scraper | Influencer data |
-| TikTok Profile Scraper | Creator metrics |
-| Facebook Pages Scraper | Business page data |
-| Facebook Groups Scraper | Community prospecting |
+| Platform | Actor | Use Case |
+|----------|-------|----------|
+| **Google** | Google Maps Scraper | Find local businesses |
+| | Google Maps Email Extractor | Direct email extraction |
+| | Google Search Scraper | Broad lead discovery |
+| **Instagram** | Instagram Profile Scraper | Influencer discovery |
+| | Instagram Scraper | Posts, comments, hashtags |
+| | Instagram Search Scraper | Places, users, hashtags |
+| | Instagram Tagged Scraper | Mentions tracking |
+| **TikTok** | TikTok Scraper | Videos, hashtags, profiles |
+| | Free TikTok Scraper | Free alternative |
+| | TikTok Profile Scraper | Creator metrics |
+| | TikTok User Search | Find users by keywords |
+| | TikTok Followers Scraper | Audience analysis |
+| **Facebook** | Facebook Pages Scraper | Business page data |
+| | Facebook Page Contacts | Contact extraction |
+| | Facebook Groups Scraper | Community prospecting |
+| | Facebook Events Scraper | Event networking |
+| **YouTube** | YouTube Scraper | Creator partnerships |
+| **Websites** | Contact Info Scraper | Emails & socials from URLs |
 
 ## Output format
 
@@ -58,7 +70,7 @@ All commands export data to CSV format for easy import into CRMs, spreadsheets, 
 
 ## Pricing
 
-Apify actors use pay-per-result pricing. Check individual actor pricing on [apify.com](https://apify.com).
+Apify Actors use pay-per-result pricing. Check individual Actor pricing on [apify.com](https://apify.com).
 
 ## Future plugins
 

@@ -77,7 +77,7 @@ uv run --with python-dotenv --with requests \
 **AI Workflow:**
 1. Ask user for search query and location/filters
 2. Ask user for output format (CSV or JSON)
-3. Run actor with base parameters only (no add-ons)
+3. Run Actor with base parameters only (no add-ons)
 4. Report: "Found X results. Key fields: title, url, description, rank"
 
 ---

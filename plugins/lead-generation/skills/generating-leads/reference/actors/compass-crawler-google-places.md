@@ -71,7 +71,7 @@ uv run --with python-dotenv --with requests \
 **AI Workflow:**
 1. Ask user for business type and location
 2. Ask user for output format (CSV or JSON)
-3. Run actor with free tier parameters only
+3. Run Actor with free tier parameters only
 4. Report: "Found X businesses. Key fields: title, address, phone, website, rating"
 
 ---
