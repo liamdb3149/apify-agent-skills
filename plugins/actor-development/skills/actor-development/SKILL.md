@@ -18,6 +18,56 @@ Actors are serverless programs inspired by the UNIX philosophy - programs that d
 - Can run from seconds to hours or even indefinitely
 - Persist state and can be restarted
 
+## Prerequisites & Setup (MANDATORY)
+
+Before creating or modifying actors, verify that `apify` CLI is installed `apify --help`.
+
+If it is not installed, you can run:
+
+```bash
+curl -fsSL https://apify.com/install-cli.sh | bash
+
+# Or (Mac): brew install apify-cli
+# Or (Windows): irm https://apify.com/install-cli.ps1 | iex
+# Or: npm install -g apify-cli
+```
+
+When the apify CLI is installed, check that it is logged in with:
+
+```bash
+apify info  # Should return your username
+```
+
+If it is not logged in, check if the APIFY_TOKEN environment variable is defined (if not, ask the user to generate one on https://console.apify.com/settings/integrations and then define APIFY_TOKEN with it).
+
+Then run:
+
+```bash
+apify login -t $APIFY_TOKEN
+```
+
+## Template Selection
+
+**IMPORTANT:** Before starting actor development, always ask the user which programming language they prefer:
+- **JavaScript**
+- **TypeScript**
+- **Python**
+
+Templates for each language are available in the `references/` directory. Use the appropriate template based on the user's language choice. Additional packages (Crawlee, Playwright, etc.) can be installed later as needed.
+
+## Quick Start Workflow
+
+1. **Use language template** - Copy the appropriate template from `references/` directory based on user's language preference
+2. **Install dependencies**
+   - JavaScript/TypeScript: `npm install`
+   - Python: `pip install -r requirements.txt`
+3. **Implement logic** - Write the actor code in `src/main.py`, `src/main.js`, or `src/main.ts`
+4. **Configure schemas** - Update input/output schemas in `.actor/input_schema.json`, `.actor/output_schema.json`, `.actor/dataset_schema.json`
+5. **Configure platform settings** - Update `.actor/actor.json` with actor metadata (see [references/actor-json.md](references/actor-json.md))
+6. **Write documentation** - Create comprehensive README.md for the marketplace
+7. **Test locally** - Run `apify run` to verify functionality (see Local Testing section below)
+8. **Deploy** - Run `apify push` to deploy the actor on the Apify platform (actor name is defined in `.actor/actor.json`)
+
 ## Best Practices
 
 **✓ Do:**
@@ -34,7 +84,7 @@ Actors are serverless programs inspired by the UNIX philosophy - programs that d
 - Use semantic CSS selectors with fallback strategies
 - Respect robots.txt, ToS, and implement rate limiting
 - **Always use `apify/log` package** - censors sensitive data (API keys, tokens, credentials)
-- Implement readiness probe handler for standby Actors
+- Implement readiness probe handler (required if your Actor uses standby mode)
 
 **✗ Don't:**
 - Rely on `Dataset.getInfo()` for final counts on Cloud
@@ -50,33 +100,7 @@ Actors are serverless programs inspired by the UNIX philosophy - programs that d
 
 ## Logging
 
-**Always use the `apify/log` package** - it contains critical security logic to censor sensitive data (tokens, API keys, credentials).
-
-**Common log levels:**
-- `log.debug()` - Detailed diagnostics (inside functions)
-- `log.info()` - General messages (API requests, successful operations)
-- `log.warning()` - Potentially problematic situations
-- `log.error()` - Actual errors and failures
-- `log.exception()` - Exceptions with stack traces
-- `log.softFail()` - Non-critical failures (validation errors, skipped items)
-
-## Standby Mode
-
-**Never disable standby mode (`usesStandbyMode: false`) without explicit permission.** Standby mode keeps Actors ready in the background to respond to HTTP requests like a real-time API server.
-
-**Always implement readiness probe for standby Actors:**
-
-```typescript
-// Apify standby readiness probe at root path
-app.get('/', (req: Request, res: Response) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    if (req.headers['x-apify-container-server-readiness-probe']) {
-        res.end('Readiness probe OK\n');
-    } else {
-        res.end('Actor is ready\n');
-    }
-});
-```
+See [references/logging.md](references/logging.md) for complete logging documentation including available log levels and best practices for JavaScript/TypeScript and Python.
 
 Check `usesStandbyMode` in `.actor/actor.json` - only implement if set to `true`.
 
@@ -85,25 +109,23 @@ Check `usesStandbyMode` in `.actor/actor.json` - only implement if set to `true`
 ```bash
 apify run          # Run Actor locally
 apify login        # Authenticate account
-apify push         # Deploy to Apify platform
+apify push         # Deploy to Apify platform (uses name from .actor/actor.json)
 apify help         # List all commands
 ```
 
-## Safety and Permissions
+## Local Testing
 
-**Allowed without prompt:**
-- Read files with `Actor.getValue()`
-- Push data with `Actor.pushData()`
-- Set values with `Actor.setValue()`
-- Enqueue requests to RequestQueue
-- Run locally with `apify run`
+When testing an actor locally with `apify run`, provide input data by creating a JSON file at:
 
-**Ask first:**
-- npm/pip package installations
-- `apify push` (deployment to cloud)
-- Proxy configuration changes (requires paid plan)
-- Dockerfile changes affecting builds
-- Deleting datasets or key-value stores
+```
+storage/key_value_stores/default/INPUT.json
+```
+
+This file should contain the input parameters defined in your `.actor/input_schema.json`. The actor will read this input when running locally, mirroring how it receives input on the Apify platform.
+
+## Standby Mode
+
+See [references/standby-mode.md](references/standby-mode.md) for complete standby mode documentation including readiness probe implementation for JavaScript/TypeScript and Python.
 
 ## Project Structure
 
@@ -113,7 +135,7 @@ apify help         # List all commands
 ├── input_schema.json    # Input validation & Console form definition
 └── output_schema.json   # Output storage and display templates
 src/
-└── main.js             # Actor entry point
+└── main.js/ts/py       # Actor entry point
 storage/                # Local storage (mirrors Cloud)
 ├── datasets/           # Output items (JSON objects)
 ├── key_value_stores/   # Files, config, INPUT
@@ -121,141 +143,40 @@ storage/                # Local storage (mirrors Cloud)
 Dockerfile              # Container image definition
 ```
 
+## Actor Configuration
+
+See [references/actor-json.md](references/actor-json.md) for complete actor.json structure and configuration options.
+
 ## Input Schema
 
-The input schema defines Actor parameters and generates the Console UI form.
-
-**Basic structure:**
-```json
-{
-    "title": "Actor Input Schema Title",
-    "type": "object",
-    "schemaVersion": 1,
-    "properties": {
-        "startUrls": {
-            "title": "Start URLs",
-            "type": "array",
-            "description": "URLs to start scraping from",
-            "editor": "requestListSources",
-            "default": [{ "url": "https://example.com" }]
-        },
-        "maxItems": {
-            "title": "Max Items",
-            "type": "integer",
-            "description": "Maximum items to scrape",
-            "default": 100,
-            "minimum": 1
-        },
-        "proxyConfiguration": {
-            "title": "Proxy Configuration",
-            "type": "object",
-            "editor": "proxy",
-            "default": { "useApifyProxy": false }
-        }
-    },
-    "required": ["startUrls"]
-}
-```
-
-**Common field types:** `string`, `integer`, `boolean`, `array`, `object`, `enum`
-**Common editors:** `requestListSources`, `proxy`, `json`, `select`
+See [references/input-schema.md](references/input-schema.md) for input schema structure and examples.
 
 ## Output Schema
 
-Specifies where Actor stores output and how to access it.
-
-**Structure:**
-```json
-{
-    "actorOutputSchemaVersion": 1,
-    "title": "Output Schema Title",
-    "properties": {
-        "dataset": {
-            "type": "string",
-            "title": "Dataset",
-            "template": "{{links.apiDefaultDatasetUrl}}/items"
-        },
-        "files": {
-            "type": "string",
-            "title": "Files",
-            "template": "{{links.apiDefaultKeyValueStoreUrl}}/keys"
-        }
-    }
-}
-```
-
-**Common template variables:** `links.apiDefaultDatasetUrl`, `links.apiDefaultKeyValueStoreUrl`, `links.publicRunUrl`, `run.defaultDatasetId`
+See [references/output-schema.md](references/output-schema.md) for output schema structure, examples, and template variables.
 
 ## Dataset Schema
 
-Defines how output data is structured, transformed, and displayed in Console Output tab.
-
-**Structure:**
-```json
-{
-    "actorSpecification": 1,
-    "fields": {},
-    "views": {
-        "overview": {
-            "title": "Overview",
-            "transformation": {
-                "fields": ["name", "price", "url", "image"],
-                "limit": 1000
-            },
-            "display": {
-                "component": "table",
-                "properties": {
-                    "name": { "label": "Name", "format": "text" },
-                    "price": { "label": "Price", "format": "number" },
-                    "url": { "label": "URL", "format": "link" },
-                    "image": { "label": "Image", "format": "image" }
-                }
-            }
-        }
-    }
-}
-```
-
-**Format types:** `text`, `number`, `date`, `link`, `boolean`, `image`, `array`, `object`
-**Transformation options:** `fields` (required), `unwind`, `flatten`, `omit`, `limit`, `desc`
+See [references/dataset-schema.md](references/dataset-schema.md) for dataset schema structure, configuration, and display properties.
 
 ## Key-Value Store Schema
 
-Organizes key-value store keys into logical collections.
+See [references/key-value-store-schema.md](references/key-value-store-schema.md) for key-value store schema structure, collections, and configuration.
 
-**Structure:**
-```json
-{
-    "actorKeyValueStoreSchemaVersion": 1,
-    "title": "Key-Value Store Schema",
-    "collections": {
-        "documents": {
-            "title": "Documents",
-            "description": "Text documents",
-            "keyPrefix": "document-"
-        },
-        "images": {
-            "title": "Images",
-            "keyPrefix": "image-",
-            "contentTypes": ["image/jpeg", "image/png"]
-        }
-    }
-}
-```
-
-Each collection must specify either `key` (single specific key) or `keyPrefix` (keys starting with prefix).
 
 ## Apify MCP Tools
 
 If MCP server is configured, use these tools for documentation:
+
 - `search-apify-docs` - Search documentation
 - `fetch-apify-docs` - Get full doc pages
 
-Otherwise, reference: `@https://mcp.apify.com/`
+Otherwise, the MCP Server url: `https://mcp.apify.com/?tools=docs`.
 
 ## Resources
 
-- [docs.apify.com/llms.txt](https://docs.apify.com/llms.txt) - Quick reference
-- [docs.apify.com/llms-full.txt](https://docs.apify.com/llms-full.txt) - Complete docs
-- [crawlee.dev](https://crawlee.dev) - Crawlee documentation
+- [docs.apify.com/llms.txt](https://docs.apify.com/llms.txt) - Apify quick reference documentation
+- [docs.apify.com/llms-full.txt](https://docs.apify.com/llms-full.txt) - Apify complete documentation
+- [https://crawlee.dev/llms.txt](https://crawlee.dev/llms.txt) - Crawlee quick reference documentation
+- [https://crawlee.dev/llms-full.txt](https://crawlee.dev/llms-full.txt) - Crawlee complete documentation
 - [whitepaper.actor](https://raw.githubusercontent.com/apify/actor-whitepaper/refs/heads/master/README.md) - Complete Actor specification
