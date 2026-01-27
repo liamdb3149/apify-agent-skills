@@ -201,6 +201,8 @@
       ],
       "category": "data-extraction",
       "version": "1.4.0"
+    },
+    {
       "name": "apify-actor-development",
       "source": "./skills/apify-actor-development",
       "skills": "./",
