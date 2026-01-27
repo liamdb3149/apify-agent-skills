@@ -11,6 +11,7 @@ These skills are:
  - apify-lead-generation -> "skills/apify-lead-generation/SKILL.md"
  - apify-market-research -> "skills/apify-market-research/SKILL.md"
  - apify-trend-analysis -> "skills/apify-trend-analysis/SKILL.md"
+ - apify-ultimate-scraper -> "skills/apify-ultimate-scraper/SKILL.md"
 
 IMPORTANT: You MUST read the SKILL.md file whenever the description of the skills matches the user intent, or may help accomplish their task.
 
@@ -24,6 +25,7 @@ apify-influencer-discovery: `Find and evaluate influencers for brand partnership
 apify-lead-generation: `Generates B2B/B2C leads by scraping Google Maps, websites, Instagram, TikTok, Facebook, LinkedIn, YouTube, and Google Search. Use when user asks to find leads, prospects, businesses, build lead lists, enrich contacts, or scrape profiles for sales outreach.`
 apify-market-research: `Analyze market conditions, geographic opportunities, pricing, consumer behavior, and product validation across Google Maps, Facebook, Instagram, Booking.com, and TripAdvisor.`
 apify-trend-analysis: `Discover and track emerging trends across Google Trends, Instagram, Facebook, YouTube, and TikTok to inform content strategy.`
+apify-ultimate-scraper: `Universal AI-powered web scraper for any platform. Scrape data from Instagram, Facebook, TikTok, YouTube, Google Maps, Google Search, Google Trends, Booking.com, and TripAdvisor. Use for lead generation, brand monitoring, competitor analysis, influencer discovery, trend research, content analytics, audience analysis, or any data extraction task.`
 </available_skills>
 
 Paths referenced within SKILL.md files are relative to that SKILL folder. For example `reference/workflows.md` refers to the workflows file inside the skill's reference folder.
