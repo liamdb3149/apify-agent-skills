@@ -8,9 +8,11 @@ description: Track reviews, ratings, sentiment, and brand mentions across Google
 Scrape reviews, ratings, and brand mentions from multiple platforms using Apify Actors.
 
 ## Prerequisites
+(No need to check it upfront)
 
 - `.env` file with `APIFY_TOKEN`
-- Python 3.9+ and `uv`
+- Node.js 20.6+ (for native `--env-file` support)
+- `mcpc` CLI tool (for fetching Actor schemas)
 
 ## Workflow
 
@@ -19,7 +21,7 @@ Copy this checklist and track progress:
 ```
 Task Progress:
 - [ ] Step 1: Determine data source (select Actor)
-- [ ] Step 2: Read Actor schema from reference docs
+- [ ] Step 2: Fetch Actor schema via mcpc
 - [ ] Step 3: Ask user preferences (format, filename)
 - [ ] Step 4: Run the monitoring script
 - [ ] Step 5: Summarize results
@@ -29,137 +31,91 @@ Task Progress:
 
 Select the appropriate Actor based on user needs:
 
-| User Need | Actor ID | Best For | Reference Doc |
-|-----------|----------|----------|---------------|
-| Google Maps reviews | `compass/crawler-google-places` | Business reviews, ratings | [Schema](reference/actors/compass-crawler-google-places.md) |
-| Google Maps review export | `compass/Google-Maps-Reviews-Scraper` | Dedicated review scraping | [Schema](reference/actors/compass-google-maps-reviews-scraper.md) |
-| Booking.com hotels | `voyager/booking-scraper` | Hotel data, scores | [Schema](reference/actors/voyager-booking-scraper.md) |
-| Booking.com reviews | `voyager/booking-reviews-scraper` | Detailed hotel reviews | [Schema](reference/actors/voyager-booking-reviews-scraper.md) |
-| TripAdvisor reviews | `maxcopell/tripadvisor-reviews` | Attraction/restaurant reviews | [Schema](reference/actors/maxcopell-tripadvisor-reviews.md) |
-| Facebook reviews | `apify/facebook-reviews-scraper` | Page reviews | [Schema](reference/actors/apify-facebook-reviews-scraper.md) |
-| Facebook comments | `apify/facebook-comments-scraper` | Post comment monitoring | [Schema](reference/actors/apify-facebook-comments-scraper.md) |
-| Facebook page metrics | `apify/facebook-pages-scraper` | Page ratings overview | [Schema](reference/actors/apify-facebook-pages-scraper.md) |
-| Facebook reactions | `apify/facebook-likes-scraper` | Reaction type analysis | [Schema](reference/actors/apify-facebook-likes-scraper.md) |
-| Instagram comments | `apify/instagram-comment-scraper` | Comment sentiment | [Schema](reference/actors/apify-instagram-comment-scraper.md) |
-| Instagram hashtags | `apify/instagram-hashtag-scraper` | Brand hashtag monitoring | [Schema](reference/actors/apify-instagram-hashtag-scraper.md) |
-| Instagram search | `apify/instagram-search-scraper` | Brand mention discovery | [Schema](reference/actors/apify-instagram-search-scraper.md) |
-| Instagram tagged posts | `apify/instagram-tagged-scraper` | Brand tag tracking | [Schema](reference/actors/apify-instagram-tagged-scraper.md) |
-| Instagram export | `apify/export-instagram-comments-posts` | Bulk comment export | [Schema](reference/actors/apify-export-instagram-comments-posts.md) |
-| Instagram comprehensive | `apify/instagram-scraper` | Full Instagram monitoring | [Schema](reference/actors/apify-instagram-scraper.md) |
-| Instagram API | `apify/instagram-api-scraper` | API-based monitoring | [Schema](reference/actors/apify-instagram-api-scraper.md) |
-| YouTube comments | `streamers/youtube-comments-scraper` | Video comment sentiment | [Schema](reference/actors/streamers-youtube-comments-scraper.md) |
-| TikTok comments | `clockworks/tiktok-comments-scraper` | TikTok sentiment | [Schema](reference/actors/clockworks-tiktok-comments-scraper.md) |
+| User Need | Actor ID | Best For |
+|-----------|----------|----------|
+| Google Maps reviews | `compass/crawler-google-places` | Business reviews, ratings |
+| Google Maps review export | `compass/Google-Maps-Reviews-Scraper` | Dedicated review scraping |
+| Booking.com hotels | `voyager/booking-scraper` | Hotel data, scores |
+| Booking.com reviews | `voyager/booking-reviews-scraper` | Detailed hotel reviews |
+| TripAdvisor reviews | `maxcopell/tripadvisor-reviews` | Attraction/restaurant reviews |
+| Facebook reviews | `apify/facebook-reviews-scraper` | Page reviews |
+| Facebook comments | `apify/facebook-comments-scraper` | Post comment monitoring |
+| Facebook page metrics | `apify/facebook-pages-scraper` | Page ratings overview |
+| Facebook reactions | `apify/facebook-likes-scraper` | Reaction type analysis |
+| Instagram comments | `apify/instagram-comment-scraper` | Comment sentiment |
+| Instagram hashtags | `apify/instagram-hashtag-scraper` | Brand hashtag monitoring |
+| Instagram search | `apify/instagram-search-scraper` | Brand mention discovery |
+| Instagram tagged posts | `apify/instagram-tagged-scraper` | Brand tag tracking |
+| Instagram export | `apify/export-instagram-comments-posts` | Bulk comment export |
+| Instagram comprehensive | `apify/instagram-scraper` | Full Instagram monitoring |
+| Instagram API | `apify/instagram-api-scraper` | API-based monitoring |
+| YouTube comments | `streamers/youtube-comments-scraper` | Video comment sentiment |
+| TikTok comments | `clockworks/tiktok-comments-scraper` | TikTok sentiment |
 
-### Step 2: Read Actor Schema
+### Step 2: Fetch Actor Schema
 
-Read the corresponding reference doc from the table above to understand:
+Fetch the Actor's input schema and details dynamically using mcpc:
+
+```bash
+export $(grep APIFY_TOKEN .env | xargs) && mcpc --json mcp.apify.com --header "Authorization: Bearer $APIFY_TOKEN" tools-call fetch-actor-details actor:="ACTOR_ID" | jq -r ".content"
+```
+
+Replace `ACTOR_ID` with the selected Actor (e.g., `compass/crawler-google-places`).
+
+This returns:
+- Actor description and README
 - Required and optional input parameters
-- Output fields available
-- Actor-specific requirements
+- Output fields (if available)
 
 ### Step 3: Ask User Preferences
 
 Before running, ask:
 1. **Output format**:
-   - **Quick answer** - Display top 5 results in chat (no file saved)
-   - **CSV (all data)** - Full export with all fields
-   - **CSV (basic fields)** - Export with essential fields only
-   - **JSON (all data)** - Full export in JSON format
-2. **Output filename** (if file output selected): Suggest descriptive name based on search
+   - **Quick answer** - Display top few results in chat (no file saved)
+   - **CSV** - Full export with all fields
+   - **JSON** - Full export in JSON format
+2. **Number of results**: Based on character of use case
 
 ### Step 4: Run the Script
 
 **Quick answer (display in chat, no file):**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT'
 ```
 
-**CSV (all data):**
+**CSV:**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.csv \
+  --output YYYY-MM-DD_OUTPUT_FILE.csv \
   --format csv
 ```
 
-**CSV (basic fields):**
+**JSON:**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.csv \
-  --format csv \
-  --fields basic
-```
-
-**JSON (all data):**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "ACTOR_ID" \
-  --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.json \
+  --output YYYY-MM-DD_OUTPUT_FILE.json \
   --format json
 ```
-
-The script handles:
-- Loading `APIFY_TOKEN` from `.env`
-- Starting and polling the Actor run
-- Downloading results in requested format (or displaying in chat)
-- Reporting record count and file size
 
 ### Step 5: Summarize Results
 
 After completion, report:
 - Number of reviews/mentions found
-- File location
+- File location and name
 - Key fields available
 - Suggested next steps (sentiment analysis, filtering)
 
-## Quick Examples
-
-**Quick answer - display top 5 in chat:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "compass/crawler-google-places" \
-  --input '{"searchStringsArray": ["Starbucks"], "locationQuery": "New York, USA", "maxCrawledPlacesPerSearch": 20}'
-```
-
-**Google Maps reviews - CSV with basic fields:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "compass/Google-Maps-Reviews-Scraper" \
-  --input '{"placeUrls": ["https://www.google.com/maps/place/..."], "maxReviews": 100}' \
-  --output starbucks-reviews.csv \
-  --format csv \
-  --fields basic
-```
-
-**TripAdvisor reviews - full JSON export:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "maxcopell/tripadvisor-reviews" \
-  --input '{"startUrls": [{"url": "https://www.tripadvisor.com/..."}], "maxReviews": 200}' \
-  --output tripadvisor-reviews.json \
-  --format json
-```
-
-See [reference/workflows.md](reference/workflows.md) for detailed step-by-step guides for each use case.
 
 ## Error Handling
 
-| Error | Solution |
-|-------|----------|
-| `APIFY_TOKEN not found` | Ask user to create `.env` with `APIFY_TOKEN=your_token` |
-| `Actor not found` | Check Actor ID spelling |
-| `Run FAILED` | Ask user to check Apify console link in error output |
-| `Timeout` | Reduce input size or increase `--timeout` |
+`APIFY_TOKEN not found` - Ask user to create `.env` with `APIFY_TOKEN=your_token`
+`mcpc not found` - Ask user to install `npm install -g @apify/mcpc`
+`Actor not found` - Check Actor ID spelling
+`Run FAILED` - Ask user to check Apify console link in error output
+`Timeout` - Reduce input size or increase `--timeout`

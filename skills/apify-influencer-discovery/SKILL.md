@@ -8,9 +8,11 @@ description: Find and evaluate influencers for brand partnerships, verify authen
 Discover and analyze influencers across multiple platforms using Apify Actors.
 
 ## Prerequisites
+(No need to check it upfront)
 
 - `.env` file with `APIFY_TOKEN`
-- Python 3.9+ and `uv`
+- Node.js 20.6+ (for native `--env-file` support)
+- `mcpc` CLI tool (for fetching Actor schemas)
 
 ## Workflow
 
@@ -19,7 +21,7 @@ Copy this checklist and track progress:
 ```
 Task Progress:
 - [ ] Step 1: Determine discovery source (select Actor)
-- [ ] Step 2: Read Actor schema from reference docs
+- [ ] Step 2: Fetch Actor schema via mcpc
 - [ ] Step 3: Ask user preferences (format, filename)
 - [ ] Step 4: Run the discovery script
 - [ ] Step 5: Summarize results
@@ -29,134 +31,88 @@ Task Progress:
 
 Select the appropriate Actor based on user needs:
 
-| User Need | Actor ID | Best For | Reference Doc |
-|-----------|----------|----------|---------------|
-| Influencer profiles | `apify/instagram-profile-scraper` | Profile metrics, bio, follower counts | [Schema](reference/actors/apify-instagram-profile-scraper.md) |
-| Find by hashtag | `apify/instagram-hashtag-scraper` | Discover influencers using specific hashtags | [Schema](reference/actors/apify-instagram-hashtag-scraper.md) |
-| Reel engagement | `apify/instagram-reel-scraper` | Analyze reel performance and engagement | [Schema](reference/actors/apify-instagram-reel-scraper.md) |
-| Discovery by niche | `apify/instagram-search-scraper` | Search for influencers by keyword/niche | [Schema](reference/actors/apify-instagram-search-scraper.md) |
-| Brand mentions | `apify/instagram-tagged-scraper` | Track who tags brands/products | [Schema](reference/actors/apify-instagram-tagged-scraper.md) |
-| Comprehensive data | `apify/instagram-scraper` | Full profile, posts, comments analysis | [Schema](reference/actors/apify-instagram-scraper.md) |
-| API-based discovery | `apify/instagram-api-scraper` | Fast API-based data extraction | [Schema](reference/actors/apify-instagram-api-scraper.md) |
-| Engagement analysis | `apify/export-instagram-comments-posts` | Export comments for sentiment analysis | [Schema](reference/actors/apify-export-instagram-comments-posts.md) |
-| Facebook content | `apify/facebook-posts-scraper` | Analyze Facebook post performance | [Schema](reference/actors/apify-facebook-posts-scraper.md) |
-| Micro-influencers | `apify/facebook-groups-scraper` | Find influencers in niche groups | [Schema](reference/actors/apify-facebook-groups-scraper.md) |
-| Influential pages | `apify/facebook-search-scraper` | Search for influential pages | [Schema](reference/actors/apify-facebook-search-scraper.md) |
-| YouTube creators | `streamers/youtube-channel-scraper` | Channel metrics and subscriber data | [Schema](reference/actors/streamers-youtube-channel-scraper.md) |
-| TikTok influencers | `clockworks/tiktok-scraper` | Comprehensive TikTok data extraction | [Schema](reference/actors/clockworks-tiktok-scraper.md) |
-| TikTok (free) | `clockworks/free-tiktok-scraper` | Free TikTok data extractor | [Schema](reference/actors/clockworks-free-tiktok-scraper.md) |
-| Live streamers | `clockworks/tiktok-live-scraper` | Discover live streaming influencers | [Schema](reference/actors/clockworks-tiktok-live-scraper.md) |
+| User Need | Actor ID | Best For |
+|-----------|----------|----------|
+| Influencer profiles | `apify/instagram-profile-scraper` | Profile metrics, bio, follower counts |
+| Find by hashtag | `apify/instagram-hashtag-scraper` | Discover influencers using specific hashtags |
+| Reel engagement | `apify/instagram-reel-scraper` | Analyze reel performance and engagement |
+| Discovery by niche | `apify/instagram-search-scraper` | Search for influencers by keyword/niche |
+| Brand mentions | `apify/instagram-tagged-scraper` | Track who tags brands/products |
+| Comprehensive data | `apify/instagram-scraper` | Full profile, posts, comments analysis |
+| API-based discovery | `apify/instagram-api-scraper` | Fast API-based data extraction |
+| Engagement analysis | `apify/export-instagram-comments-posts` | Export comments for sentiment analysis |
+| Facebook content | `apify/facebook-posts-scraper` | Analyze Facebook post performance |
+| Micro-influencers | `apify/facebook-groups-scraper` | Find influencers in niche groups |
+| Influential pages | `apify/facebook-search-scraper` | Search for influential pages |
+| YouTube creators | `streamers/youtube-channel-scraper` | Channel metrics and subscriber data |
+| TikTok influencers | `clockworks/tiktok-scraper` | Comprehensive TikTok data extraction |
+| TikTok (free) | `clockworks/free-tiktok-scraper` | Free TikTok data extractor |
+| Live streamers | `clockworks/tiktok-live-scraper` | Discover live streaming influencers |
 
-### Step 2: Read Actor Schema
+### Step 2: Fetch Actor Schema
 
-Read the corresponding reference doc from the table above to understand:
+Fetch the Actor's input schema and details dynamically using mcpc:
+
+```bash
+export $(grep APIFY_TOKEN .env | xargs) && mcpc --json mcp.apify.com --header "Authorization: Bearer $APIFY_TOKEN" tools-call fetch-actor-details actor:="ACTOR_ID" | jq -r ".content"
+```
+
+Replace `ACTOR_ID` with the selected Actor (e.g., `apify/instagram-profile-scraper`).
+
+This returns:
+- Actor description and README
 - Required and optional input parameters
-- Output fields available
-- Actor-specific requirements
+- Output fields (if available)
 
 ### Step 3: Ask User Preferences
 
 Before running, ask:
 1. **Output format**:
-   - **Quick answer** - Display top 5 results in chat (no file saved)
-   - **CSV (all data)** - Full export with all fields
-   - **CSV (basic fields)** - Export with essential fields only
-   - **JSON (all data)** - Full export in JSON format
-2. **Output filename** (if file output selected): Suggest descriptive name based on search
+   - **Quick answer** - Display top few results in chat (no file saved)
+   - **CSV** - Full export with all fields
+   - **JSON** - Full export in JSON format
+2. **Number of results**: Based on character of use case
 
 ### Step 4: Run the Script
 
 **Quick answer (display in chat, no file):**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT'
 ```
 
-**CSV (all data):**
+**CSV:**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.csv \
+  --output YYYY-MM-DD_OUTPUT_FILE.csv \
   --format csv
 ```
 
-**CSV (basic fields):**
+**JSON:**
 ```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
+node --env-file=.env ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.js \
   --actor "ACTOR_ID" \
   --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.csv \
-  --format csv \
-  --fields basic
-```
-
-**JSON (all data):**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "ACTOR_ID" \
-  --input 'JSON_INPUT' \
-  --output OUTPUT_FILE.json \
+  --output YYYY-MM-DD_OUTPUT_FILE.json \
   --format json
 ```
-
-The script handles:
-- Loading `APIFY_TOKEN` from `.env`
-- Starting and polling the Actor run
-- Downloading results in requested format (or displaying in chat)
-- Reporting record count and file size
 
 ### Step 5: Summarize Results
 
 After completion, report:
 - Number of influencers found
-- File location
+- File location and name
 - Key metrics available (followers, engagement rate, etc.)
 - Suggested next steps (filtering, outreach, deeper analysis)
 
-## Quick Examples
-
-**Quick answer - display top 5 Instagram influencers in chat:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "apify/instagram-profile-scraper" \
-  --input '{"usernames": ["influencer1", "influencer2", "influencer3"]}'
-```
-
-**Hashtag discovery - CSV with basic fields:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "apify/instagram-hashtag-scraper" \
-  --input '{"hashtags": ["fitness", "workout"], "resultsLimit": 100}' \
-  --output fitness-influencers.csv \
-  --format csv \
-  --fields basic
-```
-
-**TikTok influencer analysis - full JSON export:**
-```bash
-uv run --with python-dotenv --with requests \
-  ${CLAUDE_PLUGIN_ROOT}/reference/scripts/run_actor.py \
-  --actor "clockworks/tiktok-scraper" \
-  --input '{"profiles": ["@creator1", "@creator2"]}' \
-  --output tiktok-influencers.json \
-  --format json
-```
-
-See [reference/workflows.md](reference/workflows.md) for detailed step-by-step guides for each use case.
 
 ## Error Handling
 
-| Error | Solution |
-|-------|----------|
-| `APIFY_TOKEN not found` | Ask user to create `.env` with `APIFY_TOKEN=your_token` |
-| `Actor not found` | Check Actor ID spelling |
-| `Run FAILED` | Ask user to check Apify console link in error output |
-| `Timeout` | Reduce input size or increase `--timeout` |
+`APIFY_TOKEN not found` - Ask user to create `.env` with `APIFY_TOKEN=your_token`
+`mcpc not found` - Ask user to install `npm install -g @apify/mcpc`
+`Actor not found` - Check Actor ID spelling
+`Run FAILED` - Ask user to check Apify console link in error output
+`Timeout` - Reduce input size or increase `--timeout`

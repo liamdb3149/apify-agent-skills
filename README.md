@@ -50,17 +50,15 @@ Any AI tool that supports markdown context can use the skills by pointing to:
 
 ## Prerequisites
 
-1. **Apify Account**: Sign up at [apify.com](https://apify.com)
-2. **API Token**: Get your token from [Apify Console > Integrations](https://console.apify.com/account/integrations)
-3. **Set Environment Variable**: Add to your `.env` file:
-   ```
-   APIFY_TOKEN=your_token_here
-   ```
+1. **Apify Account** - [apify.com](https://apify.com)
+2. **API Token** - Get from [Apify Console](https://console.apify.com/account/integrations), add `APIFY_TOKEN=your_token` to `.env`
+3. **Node.js 20.6+**
+4. **mcpc CLI** - `npm install -g @apify/mcpc`
 
 ## Output Formats
 
-- **Quick Answer** - Top 5 results displayed in chat (default, no file saved)
-- **CSV** - Full export or basic fields only
+- **Quick Answer** - Top 5 results displayed in chat (no file saved)
+- **CSV** - Full export with all fields
 - **JSON** - Full data export
 
 ## Pricing
@@ -88,20 +86,6 @@ Apify Actors use pay-per-result pricing. Check individual Actor pricing on [apif
 # Regenerate AGENTS.md and validate marketplace.json
 uv run scripts/generate_agents.py
 ```
-
-## Future Skills
-
-### Outcome-based
-- `competitor-intelligence` - Benchmarking, feature comparison
-- `influencer-discovery` - Find and vet influencers
-- `trend-analysis` - Hashtag tracking, viral content
-
-### Platform-based
-- `google-intelligence` - Maps, Search, Trends, Booking
-- `instagram-intelligence` - Profiles, Posts, Reels, Hashtags
-- `facebook-intelligence` - Pages, Posts, Groups, Ads
-- `tiktok-intelligence` - Profiles, Videos, Hashtags, Sounds
-- `youtube-intelligence` - Channels, Videos, Shorts, Comments
 
 ## Support
 
