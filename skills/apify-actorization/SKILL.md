@@ -115,7 +115,7 @@ await Actor.exit();
 - `Actor.init()` configures storage to use Apify API when running on platform
 - `Actor.exit()` handles graceful shutdown and cleanup
 - Both calls must be awaited
-- The SDK detects `APIFY_IS_AT_HOME` env var - local execution remains unchanged
+- Local execution remains unchanged - the SDK automatically detects the environment
 
 #### Python Projects
 
@@ -158,8 +158,8 @@ if __name__ == '__main__':
 
 **Key points:**
 - `async with Actor:` handles both initialization and cleanup
-- Automatically manages platform event listeners
-- Detects `APIFY_IS_AT_HOME` env var for conditional behavior
+- Automatically manages platform event listeners and graceful shutdown
+- Local execution remains unchanged - the SDK automatically detects the environment
 
 #### Other Languages (CLI-based)
 
@@ -211,7 +211,7 @@ CMD ["./start.sh"]
 
 ### Step 4: Configure Input Schema
 
-Map your application's inputs to `.actor/input_schema.json`:
+Map your application's inputs to `.actor/input_schema.json`. Validate your schema against the official JSON Schema from the `@apify/json_schemas` npm package (`input.schema.json`).
 
 ```json
 {
@@ -246,23 +246,73 @@ Map your application's inputs to `.actor/input_schema.json`:
 
 ### Step 5: Configure Output
 
+Define output structure in `.actor/output_schema.json`. Validate against the JSON Schema from the `@apify/json_schemas` npm package (`output.schema.json`).
+
 **For table-like data (multiple items):**
 - Use `Actor.pushData()` (JS) or `Actor.push_data()` (Python)
 - Each item becomes a row in the dataset
-- Define structure in `.actor/output_schema.json`
 
 **For single files or blobs:**
 - Use key-value store: `Actor.setValue()` / `Actor.set_value()`
-- Return public URL to the stored file
+- Get the public URL and include it in dataset or output:
+
+```javascript
+// Store file with public access
+await Actor.setValue('report.pdf', pdfBuffer, { contentType: 'application/pdf' });
+
+// Get the public URL
+const storeInfo = await Actor.openKeyValueStore();
+const publicUrl = `https://api.apify.com/v2/key-value-stores/${storeInfo.id}/records/report.pdf`;
+
+// Include URL in dataset output
+await Actor.pushData({ reportUrl: publicUrl });
+```
+
+**For multiple files with a common prefix (collections):**
+
+```javascript
+// Store multiple files with a prefix
+for (const [name, data] of files) {
+    await Actor.setValue(`screenshots/${name}`, data, { contentType: 'image/png' });
+}
+// Files are accessible at: .../records/screenshots%2F{name}
+```
 
 ### Step 6: Handle State (Optional)
 
 For long-running or resumable actors:
 
-**Request Queue** - For pausable subtasks:
+**Request Queue** - For pausable, resumable task processing:
+
+The request queue works for any task processing, not just web scraping. Use a dummy URL with custom `uniqueKey` and `userData` for non-URL tasks:
+
 ```javascript
 const requestQueue = await Actor.openRequestQueue();
-await requestQueue.addRequest({ url: 'https://example.com' });
+
+// Add tasks to the queue (works for any processing, not just URLs)
+await requestQueue.addRequest({
+    url: 'https://placeholder.local',  // Dummy URL for non-scraping tasks
+    uniqueKey: `task-${taskId}`,       // Unique identifier for deduplication
+    userData: { itemId: 123, action: 'process' },  // Your custom task data
+});
+
+// Process tasks from the queue (with Crawlee)
+const crawler = new BasicCrawler({
+    requestQueue,
+    requestHandler: async ({ request }) => {
+        const { itemId, action } = request.userData;
+        // Process your task using userData
+        await processTask(itemId, action);
+    },
+});
+await crawler.run();
+
+// Or manually consume without Crawlee:
+let request;
+while ((request = await requestQueue.fetchNextRequest())) {
+    await processTask(request.userData);
+    await requestQueue.markRequestHandled(request);
+}
 ```
 
 **Key-Value Store** - For checkpoint state:
@@ -276,7 +326,7 @@ const state = await Actor.getValue('STATE') || { processedCount: 0 };
 
 ### Step 7: Update actor.json
 
-Configure `.actor/actor.json`:
+Configure `.actor/actor.json`. Validate against the JSON Schema from the `@apify/json_schemas` npm package (`actor.schema.json`).
 
 ```json
 {
@@ -298,20 +348,21 @@ Configure `.actor/actor.json`:
 
 ### Step 8: Test Locally
 
-Create test input:
+Run the actor with inline input (for JS/TS and Python actors):
 
 ```bash
-mkdir -p storage/key_value_stores/default
-echo '{"startUrl": "https://example.com", "maxItems": 10}' > storage/key_value_stores/default/INPUT.json
+apify run --input '{"startUrl": "https://example.com", "maxItems": 10}'
 ```
 
-Run the actor:
+Or use an input file:
 
 ```bash
-apify run
+apify run --input-file ./test-input.json
 ```
 
 **Important:** Always use `apify run`, not `npm start` or `python main.py`. The CLI sets up the proper environment and storage.
+
+**Note:** For CLI-based actors (shell wrapper scripts), you may need to test the underlying application directly with mock input, as `apify run` requires a Node.js or Python entry point.
 
 ### Step 9: Deploy
 
@@ -320,6 +371,25 @@ apify push
 ```
 
 This uploads and builds your actor on the Apify platform.
+
+### Step 10: Monetization (Optional)
+
+After deploying, you can monetize your actor in the Apify Store. The recommended model for actorized projects is **Pay Per Event (PPE)**:
+
+**Pay Per Event** - Charge users based on specific events:
+- Per result/item scraped
+- Per page processed
+- Per API call made
+- Per file generated
+
+Configure PPE in the Apify Console under Actor > Monetization. Define:
+- Event name (e.g., "result", "page", "request")
+- Price per event
+- Emit events in your code with `Actor.emit('result')` or track via dataset items
+
+Other monetization options:
+- **Rental** - Monthly subscription for unlimited usage
+- **Free** - Open source, community contribution
 
 ## Common Patterns
 
@@ -333,15 +403,26 @@ import { PlaywrightCrawler } from 'crawlee';
 
 await Actor.init();
 
+// Get and validate input
+const input = await Actor.getInput();
+const {
+    startUrl = 'https://example.com',
+    maxItems = 100,
+} = input ?? {};
+
+let itemCount = 0;
+
 const crawler = new PlaywrightCrawler({
-    requestHandler: async ({ page, request }) => {
+    requestHandler: async ({ page, request, pushData }) => {
+        if (itemCount >= maxItems) return;
+
         const title = await page.title();
-        await Actor.pushData({ url: request.url, title });
+        await pushData({ url: request.url, title });
+        itemCount++;
     },
 });
 
-const input = await Actor.getInput();
-await crawler.run([input.startUrl]);
+await crawler.run([startUrl]);
 
 await Actor.exit();
 ```
@@ -383,10 +464,14 @@ await Actor.exit();
 Before deploying, verify:
 
 - [ ] `.actor/actor.json` exists with correct name and description
+- [ ] `.actor/actor.json` validates against `@apify/json_schemas` (`actor.schema.json`)
 - [ ] `.actor/input_schema.json` defines all required inputs
+- [ ] `.actor/input_schema.json` validates against `@apify/json_schemas` (`input.schema.json`)
+- [ ] `.actor/output_schema.json` defines output structure (if applicable)
+- [ ] `.actor/output_schema.json` validates against `@apify/json_schemas` (`output.schema.json`)
 - [ ] `Dockerfile` is present and builds successfully
-- [ ] `Actor.init()` / `async with Actor:` wraps main code
-- [ ] `Actor.exit()` is called (JS/TS only)
+- [ ] `Actor.init()` / `Actor.exit()` wraps main code (JS/TS)
+- [ ] `async with Actor:` wraps main code (Python)
 - [ ] Inputs are read via `Actor.getInput()` / `Actor.get_input()`
 - [ ] Outputs use `Actor.pushData()` or key-value store
 - [ ] `apify run` executes successfully with test input
