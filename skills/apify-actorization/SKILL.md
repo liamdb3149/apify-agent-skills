@@ -385,7 +385,7 @@ After deploying, you can monetize your actor in the Apify Store. The recommended
 Configure PPE in the Apify Console under Actor > Monetization. Define:
 - Event name (e.g., "result", "page", "request")
 - Price per event
-- Emit events in your code with `Actor.emit('result')` or track via dataset items
+- Charge for events in your code with `await Actor.charge('result')` or track via dataset items
 
 Other monetization options:
 - **Rental** - Monthly subscription for unlimited usage
