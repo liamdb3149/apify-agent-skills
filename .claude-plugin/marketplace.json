@@ -234,6 +234,25 @@
       "commands": [
         "./commands/create-actor.md"
       ]
+    },
+    {
+      "name": "apify-actorization",
+      "source": "./skills/apify-actorization",
+      "skills": "./",
+      "description": "Convert existing projects into Apify Actors. Supports JavaScript/TypeScript (SDK with Actor.init/exit), Python (SDK with async context manager), and other languages (CLI-based wrapper scripts).",
+      "keywords": [
+        "actorization",
+        "convert",
+        "migrate",
+        "actor",
+        "apify",
+        "sdk",
+        "deployment",
+        "crawlee",
+        "serverless"
+      ],
+      "category": "development",
+      "version": "1.0.0"
     }
   ]
 }
