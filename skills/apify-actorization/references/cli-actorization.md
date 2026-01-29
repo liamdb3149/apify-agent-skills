@@ -28,10 +28,19 @@ MY_PARAM=$(echo "$INPUT" | jq -r '.myParam // "default"')
 
 ## Update Dockerfile
 
-```dockerfile
-FROM your-base-image
+Reference the [cli-start template Dockerfile](https://github.com/apify/actor-templates/blob/master/templates/cli-start/Dockerfile) which includes the `ubi` utility for installing binaries from GitHub releases.
 
-# Install apify-cli and jq
+```dockerfile
+FROM apify/actor-node:20
+
+# Install ubi for easy GitHub release installation
+RUN curl --silent --location \
+    https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh | sh
+
+# Install your CLI tool from GitHub releases (example)
+# RUN ubi --project your-org/your-tool --in /usr/local/bin
+
+# Or install apify-cli and jq manually
 RUN npm install -g apify-cli
 RUN apt-get update && apt-get install -y jq
 
@@ -39,7 +48,7 @@ RUN apt-get update && apt-get install -y jq
 COPY . .
 
 # Build your application if needed
-RUN ./build.sh
+# RUN ./build.sh
 
 # Make start script executable
 RUN chmod +x start.sh
