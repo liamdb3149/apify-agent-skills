@@ -1,0 +1,19 @@
+Creator Note on Using them
+
+https://www.skool.com/the-vibe-marketers/fcc2320c669b4550ad7a4d38c90c1804
+
+Just shipped: Apify agent skills 🚀
+What's up vibe marketers 👋🏻 We cooked up a package of skills to give your AI agents Apify superpowers.
+$ npx skills add apify/agent-skills
+These are not random slop. Lot of crucial ingredients and hard work went into this recipe. 👨🏻‍🍳
+We've leveraged well documented use cases and tested workflows Apify users are running on a daily basis, and combined these with the right combination of Actors for data extraction across web.
+Some prompt ideas to get you started:
+Scrape {brand} mentions across social media platforms from last month and analyze their sentiment
+Generate and enrich leads of employees from {company}
+Find influencers who would be a good fit to promote {brand}
+Find trending TikTok videos in {niche} and scrape their transcripts
+Analyze {competitor} ads on Facebook and Instagram
+One crucial pre-requisite to get these up and running is to install our MCP CLI and store your Apify API keys in local .env file. We've applied the code execution principle for more token efficient workflow compared to standard MCP tool calling.
+If you're interested check out the story from our CEO of how and why he vibe coded this universal client over holidays: https://x.com/jancurn/status/2007144080959291756?s=20
+Test them out and let us know what you think! Any feedback and community contributions are welcome. 😉
+0:23
